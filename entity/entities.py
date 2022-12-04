@@ -4,7 +4,7 @@ import numpy as np
 
 class Song(object):
 
-    def __init__(self, track, part_size=25):
+    def __init__(self, track, part_size=9):
         self.stft = librosa.stft(librosa.to_mono(track))
         padding = np.zeros((self.stft.shape[0], part_size // 2))
         self.stftPadded = np.abs(

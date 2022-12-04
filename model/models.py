@@ -1,38 +1,45 @@
 import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint
+import tensorflow_addons as tfa
 
 
 class MainVocalModel(object):
     model: tf.keras.models.Model
 
-    def __init__(self, weights=None):
-        self.setup_model()
+    def __init__(self, weights=None, model_path=None):
+        self.setup_model(model_path)
 
         if weights is not None:
             self.model.load_weights(weights)
 
-    def setup_model(self):
-        self.model = tf.keras.models.Sequential([
-            tf.keras.layers.Conv2D(32, (3, 3), padding='same', input_shape=(1025, 25, 1)),
-            tf.keras.layers.LeakyReLU(),
-            tf.keras.layers.Conv2D(16, (3, 3), padding='same'),
-            tf.keras.layers.LeakyReLU(),
-            tf.keras.layers.MaxPooling2D(pool_size=(3, 3)),
-            tf.keras.layers.Dropout(0.25),
+    def setup_model(self, model_path=None):
+        if model_path is not None:
+            self.model = tf.keras.models.load_model(
+                model_path,
+                custom_objects={"RectifiedAdam": tfa.optimizers.RectifiedAdam}
+            )
+        else:
+            self.model = tf.keras.models.Sequential([
+                tf.keras.layers.Conv2D(32, (3, 3), padding='same', input_shape=(1025, 9, 1)),
+                tf.keras.layers.LeakyReLU(),
+                tf.keras.layers.Conv2D(16, (3, 3), padding='same'),
+                tf.keras.layers.LeakyReLU(),
+                tf.keras.layers.MaxPooling2D(pool_size=(3, 3)),
+                tf.keras.layers.Dropout(0.25),
 
-            tf.keras.layers.Conv2D(64, (3, 3), padding='same'),
-            tf.keras.layers.LeakyReLU(),
-            tf.keras.layers.Conv2D(16, (3, 3), padding='same'),
-            tf.keras.layers.LeakyReLU(),
-            tf.keras.layers.MaxPooling2D((3, 3)),
-            tf.keras.layers.Dropout(0.25),
+                tf.keras.layers.Conv2D(64, (3, 3), padding='same'),
+                tf.keras.layers.LeakyReLU(),
+                tf.keras.layers.Conv2D(16, (3, 3), padding='same'),
+                tf.keras.layers.LeakyReLU(),
+                tf.keras.layers.MaxPooling2D((3, 3)),
+                tf.keras.layers.Dropout(0.25),
 
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(128),
-            tf.keras.layers.LeakyReLU(),
-            tf.keras.layers.Dropout(0.5),
-            tf.keras.layers.Dense(1025, activation='sigmoid')
-        ])
+                tf.keras.layers.Flatten(),
+                tf.keras.layers.Dense(128),
+                tf.keras.layers.LeakyReLU(),
+                tf.keras.layers.Dropout(0.4),
+                tf.keras.layers.Dense(1025, activation='sigmoid')
+            ])
 
         sgdOpt = tf.keras.optimizers.SGD(lr=0.001, decay=1e-6, momentum=0.9, nesterov=True)
         self.model.compile(loss=tf.keras.losses.binary_crossentropy, optimizer=sgdOpt, metrics=['accuracy'])
@@ -73,34 +80,37 @@ class MainVocalModel(object):
 class VADModel(object):
     model: tf.keras.models.Model
 
-    def __init__(self, weights=None):
-        self.setup_model()
+    def __init__(self, weights=None, model_path=None):
+        self.setup_model(model_path)
 
         if weights is not None:
             self.model.load_weights(weights)
 
-    def setup_model(self):
-        self.model = tf.keras.models.Sequential([
-            tf.keras.layers.Conv2D(32, (3, 3), padding='same', input_shape=(1025, 25, 1)),
-            tf.keras.layers.LeakyReLU(),
-            tf.keras.layers.Conv2D(16, (3, 3), padding='same'),
-            tf.keras.layers.LeakyReLU(),
-            tf.keras.layers.MaxPooling2D(pool_size=(3, 3)),
-            tf.keras.layers.Dropout(0.25),
+    def setup_model(self, model_path=None):
+        if model_path is not None:
+            self.model = tf.keras.models.load_model(model_path)
+        else:
+            self.model = tf.keras.models.Sequential([
+                tf.keras.layers.Conv2D(32, (3, 3), padding='same', input_shape=(1025, 9, 1)),
+                tf.keras.layers.LeakyReLU(),
+                tf.keras.layers.Conv2D(16, (3, 3), padding='same'),
+                tf.keras.layers.LeakyReLU(),
+                tf.keras.layers.MaxPooling2D(pool_size=(3, 3)),
+                tf.keras.layers.Dropout(0.25),
 
-            tf.keras.layers.Conv2D(64, (3, 3), padding='same'),
-            tf.keras.layers.LeakyReLU(),
-            tf.keras.layers.Conv2D(16, (3, 3), padding='same'),
-            tf.keras.layers.LeakyReLU(),
-            tf.keras.layers.MaxPooling2D((3, 3)),
-            tf.keras.layers.Dropout(0.25),
+                tf.keras.layers.Conv2D(64, (3, 3), padding='same'),
+                tf.keras.layers.LeakyReLU(),
+                tf.keras.layers.Conv2D(16, (3, 3), padding='same'),
+                tf.keras.layers.LeakyReLU(),
+                tf.keras.layers.MaxPooling2D((3, 3)),
+                tf.keras.layers.Dropout(0.25),
 
-            tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(128),
-            tf.keras.layers.LeakyReLU(),
-            tf.keras.layers.Dropout(0.5),
-            tf.keras.layers.Dense(1, activation='sigmoid')
-        ])
+                tf.keras.layers.Flatten(),
+                tf.keras.layers.Dense(128),
+                tf.keras.layers.LeakyReLU(),
+                tf.keras.layers.Dropout(0.5),
+                tf.keras.layers.Dense(1, activation='sigmoid')
+            ])
 
         sgdOpt = tf.keras.optimizers.SGD(lr=0.001, decay=1e-6, momentum=0.9, nesterov=True)
         self.model.compile(loss=tf.keras.losses.binary_crossentropy, optimizer=sgdOpt, metrics=['accuracy'])

@@ -19,7 +19,7 @@ class Analyzer(object):
             return 0
 
     def extract_vocals(self, input_path, output_path, binarization_coeff=0.215, smooth_coeff=30, vocal_sensitivity=0.9):
-        song = entities.Song(librosa.load(input_path, sr=44100)[0])
+        song = entities.Song(librosa.load(input_path, sr=22050)[0])
         bin_mask = []
 
         smooth_iter = 0
@@ -31,6 +31,7 @@ class Analyzer(object):
             pred_bin = []
             if previous_vox:
                 prediction = self.model.predict(stft)[0]
+                # print(prediction)
                 for p in prediction:
                     pred_bin.append(self.binarize(p, binarization_coeff))
                 smooth_iter += 1
@@ -51,4 +52,4 @@ class Analyzer(object):
         binary = np.array(bin_mask).T
         binary = np.delete(binary, np.s_[song.stft.shape[1]:binary.shape[1]], 1)
         vox_stft = song.stft * binary
-        write(output_path, 44100, librosa.istft(vox_stft))
+        write(output_path, 22050, librosa.istft(vox_stft))

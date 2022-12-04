@@ -31,8 +31,13 @@ def handler(argv):
 
 handler(sys.argv)
 
-model = MainVocalModel(weights="weights/vocal_model_weights.hdf5")
-vad_model = VADModel(weights="weights/vad_model_weights.hdf5")
+model = MainVocalModel(
+    weights="E:\\Projects\\vocal-separator\\2k22\\main_artifacts\\7d550238-40ae-485a-93b1-00f17902aded\\weights-0.66.hdf5"
+)
+vad_model = VADModel(
+    weights="E:\\Projects\\vocal-separator\\2k22\\artifacts\\b66d5b6e-7bb0-4b7a-977d-de503ddf3452\\\weights-0.85.hdf5",
+    model_path="E:\\Projects\\vocal-separator\\2k22\\artifacts\\b66d5b6e-7bb0-4b7a-977d-de503ddf3452\\vad-model-b66d5b6e-7bb0-4b7a-977d-de503ddf3452.h5"
+)
 analyzer = Analyzer(model=model, vad_model=vad_model)
 
 analyzer.extract_vocals(
